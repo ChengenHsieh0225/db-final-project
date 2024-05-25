@@ -6,8 +6,8 @@ CREATE TABLE input_image (
 	image_index INT,
     dim1 INT,
     dim2 INT,
-    value INT,
-    CHECK (value >= 0 AND value <= 255)
+    value FLOAT,
+    CHECK (value >= 0 AND value <= 1)
 );
 
 # store the output of each layer
@@ -63,13 +63,31 @@ CREATE TABLE conv2d_2_weights (
     weight FLOAT
 );
 CREATE TABLE dense_1_weights (
+	filter_index INT,
 	dim1 INT,
-    channel INT,
     weight FLOAT
 );
 CREATE TABLE dense_2_weights (
+	filter_index INT,
 	dim INT,
-    channel INT,
+    weight FLOAT
+);
+
+# store the biases for each layer
+CREATE TABLE conv2d_1_biases (
+	filter_index INT,
+    weight FLOAT
+);
+CREATE TABLE conv2d_2_biases (
+	filter_index INT,
+    weight FLOAT
+);
+CREATE TABLE dense_1_biases (
+	filter_index INT,
+    weight FLOAT
+);
+CREATE TABLE dense_2_biases (
+	filter_index INT,
     weight FLOAT
 );
 
