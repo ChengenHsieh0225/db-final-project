@@ -59,14 +59,17 @@ CREATE TABLE conv2d_2_weights (
 	filter_index INT,
     dim1 INT,
     dim2 INT,
+    channel INT,
     weight FLOAT
 );
 CREATE TABLE dense_1_weights (
 	dim1 INT,
+    channel INT,
     weight FLOAT
 );
 CREATE TABLE dense_2_weights (
 	dim INT,
+    channel INT,
     weight FLOAT
 );
 
