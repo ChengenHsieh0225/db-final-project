@@ -54,9 +54,11 @@ CREATE TABLE IF NOT EXISTS conv2d_1_weights (
 	filter_index INT,
     dim1 INT,
     dim2 INT,
+    channel INT,
     weight FLOAT,
     PRIMARY KEY (filter_index, dim1, dim2)
 );
+DROP TABLE conv2d_1_weights;
 CREATE TABLE IF NOT EXISTS conv2d_2_weights (
 	filter_index INT,
     dim1 INT,
