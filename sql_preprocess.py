@@ -49,3 +49,5 @@ for train_index, r0 in enumerate(train_images):
                 continue
             mycursor.execute(f"INSERT INTO input_image (image_index, dim1, dim2, value) VALUES (%s, %s, %s, %s);", 
                              [train_index, x, y, float(r2[0])])
+            
+mydb.commit()
