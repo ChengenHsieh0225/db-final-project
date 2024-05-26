@@ -48,7 +48,7 @@ def update_conv2d_weight_1(shape, arr):
         for idx in range(shape[3]):
             for dim1 in range(shape[0]):
                 for dim2 in range(shape[1]):
-                    mycursor.execute(f"INSERT INTO conv2d_1_weights (filter_index, dim1, dim2, weight ) VALUES (%s, %s, %s, %s) ON DUPLICATE KEY UPDATE weight = VALUES(weight);", [idx, dim1, dim2, float(arr[dim1][dim2][0][idx])])
+                    mycursor.execute(f"INSERT INTO conv2d_1_weights (filter_index, dim1, dim2, channel, weight ) VALUES (%s, %s, %s, 0, %s) ON DUPLICATE KEY UPDATE weight = VALUES(weight);", [idx, dim1, dim2, float(arr[dim1][dim2][0][idx])])
                     mydb.commit()
 
     else:
@@ -159,7 +159,8 @@ def train_step(images, labels):
 # 訓練模型
 epochs = 1
 batch_size = 750
-num_batches = train_images.shape[0] // batch_size
+#num_batches = train_images.shape[0] // batch_size
+num_batches = 1
 # cnt=0
 # print(train_images.shape[0])
 for epoch in range(epochs):
