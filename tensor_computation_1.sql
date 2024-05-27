@@ -199,14 +199,25 @@ CALL maxpooling2d_2_process();
 
 
 # flattern
+DROP PROCEDURE flattern;
+
 delimiter //
 CREATE PROCEDURE flattern()
 BEGIN
-	TRUNCATE TABLE flatten_output;
-	INSERT INTO flatten_output
-	SELECT 0 AS dim1, value
-	FROM max_pooling_2_output
-	ORDER BY dim1, dim2, channel;
+    DECLARE i INT DEFAULT 0; 
+    DECLARE value_count INT; 
+    TRUNCATE TABLE flatten_output;  
+    SELECT COUNT(*) INTO value_count FROM max_pooling_2_output;
+    WHILE i <= value_count DO
+        
+        INSERT INTO flatten_output (dim1, value)
+        SELECT i, value
+        FROM max_pooling_2_output
+        ORDER BY dim1, dim2, channel
+        LIMIT 1 OFFSET i ;  
+
+        SET i = i + 1;  
+    END WHILE;
 END //
 delimiter ;
 CALL flattern();
