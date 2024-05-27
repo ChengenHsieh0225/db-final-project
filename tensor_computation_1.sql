@@ -50,6 +50,42 @@ delimiter ;
 
 CALL conv2d_1_process(); -- 7.386 sec
 
+# maxPooling2d_1
+DROP PROCEDURE IF EXISTS maxpooling2d_1;
+DROP PROCEDURE IF EXISTS maxpooling2d_1_process;
+DELIMITER //
+CREATE PROCEDURE maxpooling2d_1 (IN channels INT)
+BEGIN
+	INSERT INTO max_pooling_1_output 
+	SELECT 
+    FLOOR(output.dim1 / 2) AS dim1,
+    FLOOR(output.dim2 / 2) AS dim2,
+    channels AS channel,
+    MAX(value) AS value
+    FROM conv2d_1_output AS output
+    WHERE  output.channel = channels
+	GROUP BY 
+        FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2);
+END //
+DELIMITER ;
+
+CALL maxpooling2d_1(1);
+delimiter //
+CREATE PROCEDURE maxpooling2d_1_process()
+BEGIN
+	DECLARE i int default 0;   
+    # Delete previous values
+    TRUNCATE TABLE max_pooling_1_output;
+
+	WHILE i<13 DO
+		CALL maxpooling2d_1(i);
+		SET i = i+1;
+	END WHILE;
+    
+END //
+delimiter ;
+CALL maxpooling2d_1_process();
+
 
 # conv2d_2
 DROP PROCEDURE IF EXISTS conv2d_part_2;
