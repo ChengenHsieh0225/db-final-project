@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS conv2d_1_output (
     channel INT,
     value FLOAT
 );
+
 CREATE TABLE IF NOT EXISTS max_pooling_1_output (
 	dim1 INT,
     dim2 INT,
@@ -35,8 +36,10 @@ CREATE TABLE IF NOT EXISTS max_pooling_2_output (
 	dim1 INT,
     dim2 INT,
     channel INT,
-    value FLOAT
+    value FLOAT,
+    PRIMARY KEY (dim1, dim2, channel)
 );
+
 CREATE TABLE IF NOT EXISTS flatten_output (
 	dim1 INT,
     value FLOAT

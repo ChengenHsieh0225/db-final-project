@@ -109,7 +109,10 @@ BEGIN
         AND W.filter_index = B.filter_index
         AND I.channel = W.channel
     GROUP BY 1, 2, 3;
+END //
+delimiter ;
 
+delimiter //
 CREATE PROCEDURE conv2d_2 ()
 BEGIN
 	DECLARE i int default 0;
@@ -128,6 +131,71 @@ END //
 delimiter ;
 
 CALL conv2d_2();
+
+# maxPooling2d_1
+DROP PROCEDURE IF EXISTS maxpooling2d_2;
+DROP PROCEDURE IF EXISTS maxpooling2d_2_process;
+DROP PROCEDURE IF EXISTS init_maxpooling2d_2;
+DELIMITER //
+
+CREATE PROCEDURE init_maxpooling2d_2 ()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE j INT DEFAULT 0;
+    DECLARE k INT DEFAULT 0;
+
+    -- Delete previous values
+    TRUNCATE TABLE max_pooling_2_output;
+    WHILE i < 5 DO
+        WHILE j < 5 DO
+            WHILE k < 4 DO
+                INSERT INTO max_pooling_2_output (dim1, dim2, channel, value)
+                VALUES (i, j, k, 0);
+                SET k = k + 1;
+            END WHILE;
+            SET j = j + 1;
+            SET k = 0; -- Reset k for next iteration of j
+        END WHILE;
+        SET i = i + 1;
+        SET j = 0; -- Reset j for next iteration of i
+    END WHILE;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE maxpooling2d_2 (IN channels INT)
+BEGIN
+	INSERT INTO max_pooling_2_output (dim1, dim2, channel, value)
+	SELECT 
+		FLOOR(output.dim1 / 2) AS dim1,
+		FLOOR(output.dim2 / 2) AS dim2,
+		channels AS channel,
+		MAX(value) AS value
+    FROM conv2d_2_output AS output
+    WHERE  output.channel = channels
+	GROUP BY 
+        FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2)
+	ON DUPLICATE KEY UPDATE 
+        value = VALUES(value);
+END //
+DELIMITER ;
+
+
+delimiter //
+CREATE PROCEDURE maxpooling2d_2_process()
+BEGIN
+	DECLARE i int default 0;   
+    # Delete previous values
+    CALL init_maxpooling2d_2();
+	WHILE i<13 DO
+		CALL maxpooling2d_1(i);
+		SET i = i+1;
+	END WHILE;
+    DELETE FROM max_pooling_2_output WHERE channel >= 5;
+END //
+delimiter ;
+CALL maxpooling2d_2_process();
 
 # delete all
 DELETE FROM conv2d_1_output;
