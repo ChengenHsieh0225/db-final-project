@@ -200,4 +200,101 @@ BEGIN
     CALL maxpooling2d_2_process();
 	CALL flattern();
 END //
+<<<<<<< HEAD
+delimiter ;
+CALL flattern();
+
+#dense: relu
+DROP PROCEDURE relu;
+DROP PROCEDURE relu_process;
+delimiter //
+CREATE PROCEDURE relu(IN channels INT)
+BEGIN
+	INSERT INTO dense_1_output
+	SELECT
+		W.filter_index AS dim1,		
+		SUM(I.value * W.weight) + B.weight AS value
+	FROM
+		flatten_output AS I,
+        dense_1_weights AS W,
+        dense_1_biases AS B
+    WHERE
+		I.dim1=W.dim1        
+        AND W.filter_index = B.filter_index
+        AND channels = W.filter_index
+    GROUP BY W.filter_index;
+END //
+delimiter ;
+
+delimiter //
+CREATE PROCEDURE relu_process()
+BEGIN
+    DECLARE i INT DEFAULT 0; 
+    TRUNCATE TABLE dense_1_output;
+    WHILE i<16 DO
+		CALL relu(i);
+        SET i = i + 1;
+	END WHILE;
+    UPDATE dense_1_output SET value = 0 WHERE value < 0;
+END //
+delimiter ;
+CALL relu_process();
+
+#dense softmax
+DROP PROCEDURE softmax;
+DROP PROCEDURE predict;
+delimiter //
+CREATE PROCEDURE softmax(IN channels INT)
+BEGIN
+	INSERT INTO dense_2_output
+	SELECT
+		W.filter_index AS dim1,		
+		SUM(I.value * W.weight) + B.weight AS value
+	FROM
+		dense_1_output AS I,
+        dense_2_weights AS W,
+        dense_2_biases AS B
+    WHERE
+		I.dim1=W.dim        
+        AND W.filter_index = B.filter_index
+        AND channels = W.filter_index
+    GROUP BY W.filter_index;
+END //
+delimiter ;
+SELECT COUNT(value)  FROM dense_2_output;
+
+delimiter //
+CREATE PROCEDURE predict()
+BEGIN
+	DECLARE value_count FLOAT;
+	SELECT SUM(value) INTO value_count FROM dense_2_output;
+    IF value_count > 0 THEN
+        UPDATE dense_2_output SET value = (value / value_count);
+    END IF;
+    
+END //
+delimiter ;
+
+
+delimiter //
+CREATE PROCEDURE softmax_process()
+BEGIN
+    DECLARE i INT DEFAULT 0; 
+    TRUNCATE TABLE dense_2_output;
+    TRUNCATE TABLE predictions;
+    WHILE i<10 DO
+		CALL softmax(i);
+        SET i = i + 1;
+	END WHILE;
+    UPDATE dense_2_output SET value = 0 WHERE value < 0;
+    CALL predict();
+END //
+delimiter ;
+CALL softmax_process();
+
+# delete all
+DELETE FROM conv2d_1_output;
+DELETE FROM conv2d_2_output;
+=======
 DELIMITER ;
+>>>>>>> b2d7f1a0e04bd14491161a2937f26623ad54807b
