@@ -5,7 +5,7 @@ CREATE VIEW input_image_batch AS
 
 # conv2d_1
 DROP PROCEDURE IF EXISTS conv2d_part_1;
-delimiter //
+DELIMITER //
 CREATE PROCEDURE conv2d_part_1 (IN dim1_shift INT, dim2_shift INT)
 BEGIN
 	INSERT INTO conv2d_1_output
@@ -25,12 +25,12 @@ BEGIN
         AND I.channel = W.channel
     GROUP BY 1, 2, 3;
 END //
-delimiter ;
+DELIMITER ;
 
 -- CALL conv2d_part_1(2, 1);
 
 DROP PROCEDURE IF EXISTS conv2d_1_process;
-delimiter //
+DELIMITER //
 CREATE PROCEDURE conv2d_1_process ()
 BEGIN
 	DECLARE i int default 0;
@@ -46,9 +46,7 @@ BEGIN
     -- relu
     DELETE FROM conv2d_1_output WHERE value <= 0;
 END //
-delimiter ;
-
-CALL conv2d_1_process(); -- 7.386 sec
+DELIMITER ;
 
 # maxPooling2d_1
 DROP PROCEDURE IF EXISTS maxpooling2d_1;
@@ -67,10 +65,7 @@ BEGIN
 	GROUP BY 
         FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2);
 END //
-DELIMITER ;
 
-CALL maxpooling2d_1(1);
-delimiter //
 CREATE PROCEDURE maxpooling2d_1_process()
 BEGIN
 	DECLARE i int default 0;   
@@ -83,14 +78,12 @@ BEGIN
 	END WHILE;
     
 END //
-delimiter ;
-CALL maxpooling2d_1_process();
-
+DELIMITER ;
 
 # conv2d_2
 DROP PROCEDURE IF EXISTS conv2d_part_2;
 DROP PROCEDURE IF EXISTS conv2d_2;
-delimiter //
+DELIMITER //
 CREATE PROCEDURE conv2d_part_2 (IN dim1_shift INT, dim2_shift INT)
 BEGIN
 	INSERT INTO conv2d_2_output
@@ -110,14 +103,15 @@ BEGIN
         AND I.channel = W.channel
     GROUP BY 1, 2, 3;
 END //
-delimiter ;
 
-delimiter //
 CREATE PROCEDURE conv2d_2 ()
 BEGIN
 	DECLARE i int default 0;
     DECLARE j int default 0;
+    
+    TRUNCATE TABLE conv2d_1_output;
 	WHILE i<3 DO
+		SET j = 0;
 		WHILE j<3 DO
 			CALL conv2d_part_2(i, j);
             SET j = j+1;
@@ -128,9 +122,7 @@ BEGIN
     -- relu
     DELETE FROM conv2d_2_output WHERE value <= 0;
 END //
-delimiter ;
-
-CALL conv2d_2();
+DELIMITER ;
 
 # maxPooling2d_2
 DROP PROCEDURE IF EXISTS maxpooling2d_2;
@@ -160,10 +152,7 @@ BEGIN
         SET j = 0; -- Reset j for next iteration of i
     END WHILE;
 END //
-DELIMITER ;
 
-
-DELIMITER //
 CREATE PROCEDURE maxpooling2d_2 (IN channels INT)
 BEGIN
     INSERT INTO max_pooling_2_output (dim1, dim2, channel, value)
@@ -179,10 +168,7 @@ BEGIN
     ON DUPLICATE KEY UPDATE 
         value = VALUES(value);
 END //
-DELIMITER ;
 
-
-delimiter //
 CREATE PROCEDURE maxpooling2d_2_process()
 BEGIN
 	DECLARE i int default 0;   
@@ -194,38 +180,24 @@ BEGIN
 	END WHILE;
     DELETE FROM max_pooling_2_output WHERE (dim1 >= 5) OR (dim2 >= 5);
 END //
-delimiter ;
-CALL maxpooling2d_2_process();
+DELIMITER ;
 
 
 # flattern
 DROP PROCEDURE flattern;
-
-delimiter //
 CREATE PROCEDURE flattern()
+	INSERT INTO flatten_output
+	SELECT 0 AS dim1, value
+	FROM max_pooling_2_output
+	ORDER BY dim1, dim2, channel;
+
+DELIMITER //
+CREATE PROCEDURE cnn_train()
 BEGIN
-    DECLARE i INT DEFAULT 0; 
-    DECLARE value_count INT; 
-    TRUNCATE TABLE flatten_output;  
-    SELECT COUNT(*) INTO value_count FROM max_pooling_2_output;
-    WHILE i <= value_count DO
-        
-        INSERT INTO flatten_output (dim1, value)
-        SELECT i, value
-        FROM max_pooling_2_output
-        ORDER BY dim1, dim2, channel
-        LIMIT 1 OFFSET i ;  
-
-        SET i = i + 1;  
-    END WHILE;
+	CALL conv2d_1();
+    CALL maxpooling2d_1_process();
+    CALL conv2d_2();
+    CALL maxpooling2d_2_process();
+	CALL flattern();
 END //
-delimiter ;
-CALL flattern();
-
-#dense: relu
-
-
-
-# delete all
-DELETE FROM conv2d_1_output;
-DELETE FROM conv2d_2_output;
+DELIMITER ;
