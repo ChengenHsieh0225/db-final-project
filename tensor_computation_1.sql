@@ -166,17 +166,17 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE maxpooling2d_2 (IN channels INT)
 BEGIN
-	INSERT INTO max_pooling_2_output (dim1, dim2, channel, value)
-	SELECT 
-		FLOOR(output.dim1 / 2) AS dim1,
-		FLOOR(output.dim2 / 2) AS dim2,
-		channels AS channel,
-		MAX(value) AS value
+    INSERT INTO max_pooling_2_output (dim1, dim2, channel, value)
+    SELECT 
+        FLOOR(output.dim1 / 2) AS dim1,
+        FLOOR(output.dim2 / 2) AS dim2,
+        channels AS channel,
+        MAX(value) AS value
     FROM conv2d_2_output AS output
     WHERE  output.channel = channels
-	GROUP BY 
+    GROUP BY 
         FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2)
-	ON DUPLICATE KEY UPDATE 
+    ON DUPLICATE KEY UPDATE 
         value = VALUES(value);
 END //
 DELIMITER ;
@@ -189,10 +189,10 @@ BEGIN
     # Delete previous values
     CALL init_maxpooling2d_2();
 	WHILE i<13 DO
-		CALL maxpooling2d_1(i);
+		CALL maxpooling2d_2(i);
 		SET i = i+1;
 	END WHILE;
-    DELETE FROM max_pooling_2_output WHERE channel >= 5;
+    DELETE FROM max_pooling_2_output WHERE (dim1 >= 5) OR (dim2 >= 5);
 END //
 delimiter ;
 CALL maxpooling2d_2_process();
