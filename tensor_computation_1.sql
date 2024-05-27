@@ -295,6 +295,4 @@ CALL softmax_process();
 # delete all
 DELETE FROM conv2d_1_output;
 DELETE FROM conv2d_2_output;
-=======
-DELIMITER ;
->>>>>>> b2d7f1a0e04bd14491161a2937f26623ad54807b
+
