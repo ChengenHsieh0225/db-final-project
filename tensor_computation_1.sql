@@ -132,7 +132,7 @@ delimiter ;
 
 CALL conv2d_2();
 
-# maxPooling2d_1
+# maxPooling2d_2
 DROP PROCEDURE IF EXISTS maxpooling2d_2;
 DROP PROCEDURE IF EXISTS maxpooling2d_2_process;
 DROP PROCEDURE IF EXISTS init_maxpooling2d_2;
@@ -196,6 +196,13 @@ BEGIN
 END //
 delimiter ;
 CALL maxpooling2d_2_process();
+
+
+# flattern
+INSERT INTO flatten_output
+SELECT 0 AS dim1, value
+FROM max_pooling_2_output
+ORDER BY dim1, dim2, channel;
 
 # delete all
 DELETE FROM conv2d_1_output;
