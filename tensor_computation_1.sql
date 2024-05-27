@@ -199,10 +199,21 @@ CALL maxpooling2d_2_process();
 
 
 # flattern
-INSERT INTO flatten_output
-SELECT 0 AS dim1, value
-FROM max_pooling_2_output
-ORDER BY dim1, dim2, channel;
+delimiter //
+CREATE PROCEDURE flattern()
+BEGIN
+	TRUNCATE TABLE flatten_output;
+	INSERT INTO flatten_output
+	SELECT 0 AS dim1, value
+	FROM max_pooling_2_output
+	ORDER BY dim1, dim2, channel;
+END //
+delimiter ;
+CALL flattern();
+
+#dense: relu
+
+
 
 # delete all
 DELETE FROM conv2d_1_output;
