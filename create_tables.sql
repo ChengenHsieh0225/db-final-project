@@ -1,3 +1,6 @@
+# drop old database
+DROP DATABASE IF EXISTS final_project;
+
 CREATE DATABASE IF NOT EXISTS final_project;
 USE final_project;
 
@@ -14,43 +17,56 @@ CREATE TABLE IF NOT EXISTS input_image (
 
 # store the output of each layer
 CREATE TABLE IF NOT EXISTS conv2d_1_output (
-	dim1 INT,
-    dim2 INT,
-    channel INT,
-    value FLOAT
-);
-
-CREATE TABLE IF NOT EXISTS max_pooling_1_output (
-	dim1 INT,
-    dim2 INT,
-    channel INT,
-    value FLOAT
-);
-CREATE TABLE IF NOT EXISTS conv2d_2_output (
-	dim1 INT,
-    dim2 INT,
-    channel INT,
-    value FLOAT
-);
-CREATE TABLE IF NOT EXISTS max_pooling_2_output (
+	image_index INT,
 	dim1 INT,
     dim2 INT,
     channel INT,
     value FLOAT,
-    PRIMARY KEY (dim1, dim2, channel)
+    PRIMARY KEY (image_index, dim1, dim2, channel)
+);
+
+CREATE TABLE IF NOT EXISTS max_pooling_1_output (
+	image_index INT,
+	dim1 INT,
+    dim2 INT,
+    channel INT,
+    value FLOAT,
+    PRIMARY KEY (image_index, dim1, dim2, channel)
+);
+CREATE TABLE IF NOT EXISTS conv2d_2_output (
+	image_index INT,
+	dim1 INT,
+    dim2 INT,
+    channel INT,
+    value FLOAT,
+    PRIMARY KEY (image_index, dim1, dim2, channel)
+);
+CREATE TABLE IF NOT EXISTS max_pooling_2_output (
+	image_index INT,
+	dim1 INT,
+    dim2 INT,
+    channel INT,
+    value FLOAT,
+    PRIMARY KEY (image_index, dim1, dim2, channel)
 );
 
 CREATE TABLE IF NOT EXISTS flatten_output (
+	image_index INT,
 	dim1 INT,
-    value FLOAT
+    value FLOAT,
+    PRIMARY KEY (image_index, dim1)
 );
 CREATE TABLE IF NOT EXISTS dense_1_output (
+	image_index INT,
 	dim1 INT,
-    value FLOAT
+    value FLOAT,
+    PRIMARY KEY (image_index, dim1)
 );
 CREATE TABLE IF NOT EXISTS dense_2_output (
+	image_index INT,
 	dim1 INT,
-    value FLOAT
+    value FLOAT,
+    PRIMARY KEY (image_index, dim1)
 );
 
 # store the weights for each layer
