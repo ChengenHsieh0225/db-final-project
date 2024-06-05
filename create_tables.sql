@@ -6,7 +6,7 @@ USE final_project;
 
 # input images
 CREATE TABLE IF NOT EXISTS input_image (
-	image_index INT,
+    image_index INT,
     dim1 INT,
     dim2 INT,
     channel INT,
@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS input_image (
 
 # store the output of each layer
 CREATE TABLE IF NOT EXISTS conv2d_1_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     dim2 INT,
     channel INT,
     value FLOAT,
@@ -26,24 +26,24 @@ CREATE TABLE IF NOT EXISTS conv2d_1_output (
 );
 
 CREATE TABLE IF NOT EXISTS max_pooling_1_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     dim2 INT,
     channel INT,
     value FLOAT,
     PRIMARY KEY (image_index, dim1, dim2, channel)
 );
 CREATE TABLE IF NOT EXISTS conv2d_2_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     dim2 INT,
     channel INT,
     value FLOAT,
     PRIMARY KEY (image_index, dim1, dim2, channel)
 );
 CREATE TABLE IF NOT EXISTS max_pooling_2_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     dim2 INT,
     channel INT,
     value FLOAT,
@@ -51,27 +51,27 @@ CREATE TABLE IF NOT EXISTS max_pooling_2_output (
 );
 
 CREATE TABLE IF NOT EXISTS flatten_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     value FLOAT,
     PRIMARY KEY (image_index, dim1)
 );
 CREATE TABLE IF NOT EXISTS dense_1_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     value FLOAT,
     PRIMARY KEY (image_index, dim1)
 );
 CREATE TABLE IF NOT EXISTS dense_2_output (
-	image_index INT,
-	dim1 INT,
+    image_index INT,
+    dim1 INT,
     value FLOAT,
     PRIMARY KEY (image_index, dim1)
 );
 
 # store the weights for each layer
 CREATE TABLE IF NOT EXISTS conv2d_1_weights (
-	filter_index INT,
+    filter_index INT,
     dim1 INT,
     dim2 INT,
     channel INT,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS conv2d_1_weights (
 );
 
 CREATE TABLE IF NOT EXISTS conv2d_2_weights (
-	filter_index INT,
+    filter_index INT,
     dim1 INT,
     dim2 INT,
     channel INT,
@@ -88,39 +88,39 @@ CREATE TABLE IF NOT EXISTS conv2d_2_weights (
     PRIMARY KEY (filter_index, dim1, dim2, channel)
 );
 CREATE TABLE IF NOT EXISTS dense_1_weights (
-	filter_index INT,
-	dim1 INT,
+    filter_index INT,
+    dim1 INT,
     weight FLOAT,
     PRIMARY KEY (filter_index, dim1)
 );
 CREATE TABLE IF NOT EXISTS dense_2_weights (
-	filter_index INT,
-	dim INT,
+    filter_index INT,
+    dim INT,
     weight FLOAT,
     PRIMARY KEY (filter_index, dim)
 );
 
 # store the biases for each layer
 CREATE TABLE IF NOT EXISTS conv2d_1_biases (
-	filter_index INT PRIMARY KEY,
+    filter_index INT PRIMARY KEY,
     weight FLOAT
 );
 CREATE TABLE IF NOT EXISTS conv2d_2_biases (
-	filter_index INT PRIMARY KEY,
+    filter_index INT PRIMARY KEY,
     weight FLOAT
 );
 CREATE TABLE IF NOT EXISTS dense_1_biases (
-	filter_index INT PRIMARY KEY,
+    filter_index INT PRIMARY KEY,
     weight FLOAT
 );
 CREATE TABLE IF NOT EXISTS dense_2_biases (
-	filter_index INT PRIMARY KEY,
+    filter_index INT PRIMARY KEY,
     weight FLOAT
 );
 
 # store the predictions of the current batch
 CREATE TABLE IF NOT EXISTS predictions (
-	data_index INT PRIMARY KEY,
+    data_index INT PRIMARY KEY,
     value0 FLOAT,
     value1 FLOAT, value2 FLOAT, value3 FLOAT, value4 FLOAT, value5 FLOAT,
     value6 FLOAT, value7 FLOAT, value8 FLOAT, value9 FLOAT
