@@ -118,10 +118,8 @@ CREATE TABLE IF NOT EXISTS dense_2_biases (
     weight FLOAT
 );
 
-# store the predictions of the current batch
-CREATE TABLE IF NOT EXISTS predictions (
-    data_index INT PRIMARY KEY,
-    value0 FLOAT,
-    value1 FLOAT, value2 FLOAT, value3 FLOAT, value4 FLOAT, value5 FLOAT,
-    value6 FLOAT, value7 FLOAT, value8 FLOAT, value9 FLOAT
+# store the DENOMINATOR for softmax
+CREATE TABLE IF NOT EXISTS denominators (
+	image_index INT PRIMARY KEY,
+    value FLOAT
 );
