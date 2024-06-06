@@ -25,7 +25,7 @@ BEGIN
         AND (I.dim2-dim2_shift)%3=W.dim2
         AND W.filter_index = B.filter_index
         AND I.channel = W.channel
-    GROUP BY 2, 3, 4;
+    GROUP BY 1, 2, 3, 4;
 END //
 DELIMITER ;
 
@@ -54,7 +54,6 @@ DELIMITER ;
 
 # maxPooling2d_1
 DROP PROCEDURE IF EXISTS maxpooling2d_1;
-DROP PROCEDURE IF EXISTS maxpooling2d_1_process;
 DELIMITER //
 CREATE PROCEDURE maxpooling2d_1 (IN channels INT)
 BEGIN
@@ -68,8 +67,10 @@ BEGIN
     FROM conv2d_1_output AS output
     WHERE  output.channel = channels
 	GROUP BY 
-        FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2);
+        image_index, FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2);
 END //
+
+DROP PROCEDURE IF EXISTS maxpooling2d_1_process;
 
 CREATE PROCEDURE maxpooling2d_1_process()
 BEGIN
@@ -87,7 +88,6 @@ DELIMITER ;
 -- CALL maxpooling2d_1_process(1);
 # conv2d_2
 DROP PROCEDURE IF EXISTS conv2d_part_2;
-DROP PROCEDURE IF EXISTS conv2d_2;
 DELIMITER //
 CREATE PROCEDURE conv2d_part_2 (IN dim1_shift INT, IN dim2_shift INT)
 BEGIN
@@ -107,9 +107,11 @@ BEGIN
         AND (I.dim2-dim2_shift)%3=W.dim2
         AND W.filter_index = B.filter_index
         AND I.channel = W.channel
-    GROUP BY  2, 3, 4;
+    GROUP BY  1, 2, 3, 4;
 END //
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS conv2d_2;
 DELIMITER //
 CREATE PROCEDURE conv2d_2 ()
 BEGIN
@@ -130,13 +132,9 @@ BEGIN
     DELETE FROM conv2d_2_output WHERE value <= 0;
 END //
 DELIMITER ;
--- CALL conv2d_2(1);
-# maxPooling2d_2
-DROP PROCEDURE IF EXISTS maxpooling2d_2;
-DROP PROCEDURE IF EXISTS maxpooling2d_2_process;
+
 DROP PROCEDURE IF EXISTS init_maxpooling2d_2;
 DELIMITER //
-
 CREATE PROCEDURE init_maxpooling2d_2 ()
 BEGIN
     DECLARE i INT DEFAULT 0;
@@ -164,6 +162,8 @@ BEGIN
 END //
 DELIMITER ;
 
+
+DROP PROCEDURE IF EXISTS maxpooling2d_2;
 DELIMITER //
 CREATE PROCEDURE maxpooling2d_2 (IN channels INT)
 BEGIN
@@ -177,12 +177,13 @@ BEGIN
     FROM conv2d_2_output AS output
     WHERE  output.channel = channels
     GROUP BY 
-        FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2)
+        image_index, FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2)
     ON DUPLICATE KEY UPDATE 
         value = VALUES(value);
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS maxpooling2d_2_process;
 DELIMITER //
 CREATE PROCEDURE maxpooling2d_2_process()
 BEGIN
@@ -196,10 +197,7 @@ BEGIN
     DELETE FROM max_pooling_2_output WHERE (dim1 >= 5) OR (dim2 >= 5);
 END //
 DELIMITER ;
--- CALL maxpooling2d_2_process(1);
-DROP PROCEDURE IF EXISTS maxpooling2d_2_process;
-DROP PROCEDURE IF EXISTS init_maxpooling2d_2;
-DROP PROCEDURE IF EXISTS maxpooling2d_2;
+
 # flatten
 DROP PROCEDURE IF EXISTS flatten;
 DELIMITER //
@@ -242,7 +240,6 @@ delimiter ;
 
 #dense: relu
 DROP PROCEDURE IF EXISTS relu;
-DROP PROCEDURE IF EXISTS relu_process;
 delimiter //
 CREATE PROCEDURE relu(IN channels INT)
 BEGIN
@@ -259,10 +256,11 @@ BEGIN
 		I.dim1=W.dim1        
         AND W.filter_index = B.filter_index
         AND channels = W.filter_index
-    GROUP BY W.filter_index;
+    GROUP BY I.image_index, W.filter_index;
 END //
 delimiter ;
 
+DROP PROCEDURE IF EXISTS relu_process;
 delimiter //
 CREATE PROCEDURE relu_process()
 BEGIN
@@ -279,7 +277,6 @@ delimiter ;
 
 #dense softmax
 DROP PROCEDURE IF EXISTS softmax;
-DROP PROCEDURE IF EXISTS predict;
 delimiter //
 CREATE PROCEDURE softmax(IN channels INT)
 BEGIN
@@ -296,11 +293,12 @@ BEGIN
 		I.dim1=W.dim        
         AND W.filter_index = B.filter_index
         AND channels = W.filter_index
-    GROUP BY W.filter_index;
+    GROUP BY I.image_index, W.filter_index;
 END //
 delimiter ;
 SELECT COUNT(value)  FROM dense_2_output;
 
+DROP PROCEDURE IF EXISTS predict;
 delimiter //
 CREATE PROCEDURE predict()
 BEGIN
