@@ -112,7 +112,7 @@ test_labels = tf.keras.utils.to_categorical(test_labels)
 
 # 創建模型
 model = create_cnn_model_2()
-loss_fn = tf.keras.losses.CategoricalCrossentropy()
+"""loss_fn = tf.keras.losses.CategoricalCrossentropy()
 optimizer = tf.keras.optimizers.Adam()
 model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'])
 # 定義訓練步驟函數
@@ -159,8 +159,8 @@ def train_step(images, labels):
 # 訓練模型
 epochs = 1
 batch_size = 750
-#num_batches = train_images.shape[0] // batch_size
-num_batches = 1
+num_batches = train_images.shape[0] // batch_size
+# num_batches = 1
 # cnt=0
 # print(train_images.shape[0])
 for epoch in range(epochs):
@@ -179,16 +179,67 @@ for epoch in range(epochs):
         # print(f"Epoch {epoch + 1}, Batch {batch + 1}, Loss: {loss.numpy()}")
         # print(f"Softmax layer output after batch {batch + 1}:")
         # print(predictions.numpy())
-# print(cnt)
+# print(cnt)"""
 
+class LayerTimeCallback(tf.keras.callbacks.Callback):
+    def __init__(self):
+        super(LayerTimeCallback, self).__init__()
+        self.batch_times = []
 
+    def on_train_begin(self, logs=None):
+        # 構建一個函數來獲取 softmax 層的輸出
+        softmax_layer_output = self.model.get_layer('dense_1').output
+        self.softmax_output_func = tf.keras.backend.function([self.model.input], [softmax_layer_output])
 
-# model.compile(optimizer='adam',
-#               loss='categorical_crossentropy',
-#               metrics=['accuracy'])
+    def on_epoch_begin(self, epoch, logs=None):
+        self.batch_times = []
+        
+
+    def on_batch_begin(self, batch, logs=None):
+        self.batch_start_time = time.time()
+        
+        
+
+    def on_batch_end(self, batch, logs=None):
+        batch_time = time.time() - self.batch_start_time
+
+    def on_train_end(self, logs=None):
+        # 構建一個函數來獲取 softmax 層的輸出
+        softmax_layer_output = self.model.get_layer('dense_1').output
+        self.softmax_output_func = tf.keras.backend.function([self.model.input], [softmax_layer_output])
+        for layer in self.model.layers:
+            
+            # print(f"{layer.name} weights: {weights}")
+            if layer.name == "conv2d":
+                weights = layer.get_weights()                
+                weight, bias = weights
+                update_conv2d_weight_1(weight.shape, weight)
+                update_conv2d_weight_1(bias.shape, bias)
+            if layer.name == "conv2d_1":
+                weights = layer.get_weights()                
+                weight, bias = weights
+                update_conv2d_weight_2(weight.shape, weight)
+                update_conv2d_weight_2(bias.shape, bias)
+            if layer.name == "dense":
+                weights = layer.get_weights()                
+                weight, bias = weights
+                update_dense_weight_1(weight.shape, weight)
+                update_dense_weight_1(bias.shape, bias)
+            if layer.name == "dense_1":
+                weights = layer.get_weights()                
+                weight, bias = weights
+                update_dense_weight_2(weight.shape, weight)
+                update_dense_weight_2(bias.shape, bias)
+                
+                print (bias)
+            # print(layer.name)
+
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
 
 # # 訓練模型
-# model.fit(train_images, train_labels, epochs=1, batch_size=750, validation_split=0.2, callbacks=[LayerTimeCallback()])
+model.fit(train_images, train_labels, epochs=5, batch_size=750, validation_split=0.2, callbacks=[LayerTimeCallback()])
 
 # 評估模型
 test_loss, test_acc = model.evaluate(test_images, test_labels)
