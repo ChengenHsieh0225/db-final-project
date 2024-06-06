@@ -118,7 +118,7 @@ BEGIN
 	DECLARE i int default 0;
     DECLARE j int default 0;
     
-    TRUNCATE TABLE conv2d_1_output;
+    TRUNCATE TABLE conv2d_2_output;
 	WHILE i<3 DO
 		SET j = 0;
 		WHILE j<3 DO
@@ -176,7 +176,7 @@ CREATE PROCEDURE flatten()
 BEGIN
     TRUNCATE TABLE flatten_output;  
     INSERT INTO flatten_output (image_index, dim1, value)
-    SELECT image_index, (dim1+dim2*5+channel*20), value
+    SELECT image_index, (dim1 + dim2*5 + channel*25), value
     FROM max_pooling_2_output;
 END //
 DELIMITER ;
@@ -228,7 +228,7 @@ BEGIN
     DECLARE i INT DEFAULT 0; 
     TRUNCATE TABLE dense_1_output;
     WHILE i<16 DO
-		CALL dense(i);
+		CALL dense_1(i);
         SET i = i + 1;
 	END WHILE;
     # activation function: ReLU

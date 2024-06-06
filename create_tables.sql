@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS dense_1_weights (
 );
 CREATE TABLE IF NOT EXISTS dense_2_weights (
     filter_index INT,
-    dim INT,
+    dim1 INT,
     weight FLOAT,
     PRIMARY KEY (filter_index, dim)
 );
