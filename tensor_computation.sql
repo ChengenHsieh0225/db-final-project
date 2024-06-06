@@ -134,34 +134,6 @@ END //
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS init_maxpooling2d_2;
-DELIMITER //
-CREATE PROCEDURE init_maxpooling2d_2 ()
-BEGIN
-    DECLARE i INT DEFAULT 0;
-    DECLARE j INT DEFAULT 0;
-    DECLARE k INT DEFAULT 0;
-    DECLARE image_idx INT DEFAULT 0;
-
-    -- Delete previous values
-    TRUNCATE TABLE max_pooling_2_output;
-    WHILE image_idx < 750 DO
-		WHILE i < 5 DO
-			WHILE j < 5 DO
-				WHILE k < 4 DO
-					INSERT INTO max_pooling_2_output (image_index, dim1, dim2, channel, value)
-					VALUES (image_idx, i, j, k, 0);
-					SET k = k + 1;
-				END WHILE;
-				SET j = j + 1;
-				SET k = 0; -- Reset k for next iteration of j
-			END WHILE;
-			SET i = i + 1;
-			SET j = 0; -- Reset j for next iteration of i
-		END WHILE;
-	END WHILE;
-END //
-DELIMITER ;
-
 
 DROP PROCEDURE IF EXISTS maxpooling2d_2;
 DELIMITER //
@@ -188,8 +160,7 @@ DELIMITER //
 CREATE PROCEDURE maxpooling2d_2_process()
 BEGIN
 	DECLARE i int default 0;   
-    # Delete previous values
-    CALL init_maxpooling2d_2();
+    # CALL init_maxpooling2d_2();
 	WHILE i<13 DO
 		CALL maxpooling2d_2(i);
 		SET i = i+1;
@@ -203,20 +174,10 @@ DROP PROCEDURE IF EXISTS flatten;
 DELIMITER //
 CREATE PROCEDURE flatten()
 BEGIN
-	DECLARE i INT DEFAULT 0; 
-    DECLARE value_count INT; 
     TRUNCATE TABLE flatten_output;  
-    SELECT COUNT(*) INTO value_count FROM max_pooling_2_output;
-    WHILE i <= value_count DO
-
-        INSERT INTO flatten_output (image_index, dim1, value)
-        SELECT image_index, i, value
-        FROM max_pooling_2_output
-        ORDER BY dim1, dim2, channel
-        LIMIT 1 OFFSET i ;  
-
-        SET i = i + 1;  
-    END WHILE;
+    INSERT INTO flatten_output (image_index, dim1, value)
+    SELECT image_index, (dim1+dim2*5+channel*20), value
+    FROM max_pooling_2_output;
 END //
 DELIMITER ;
 -- CALL flatten(1);
@@ -239,9 +200,9 @@ delimiter ;
 -- CALL cnn_train();
 
 #dense: relu
-DROP PROCEDURE IF EXISTS relu;
+DROP PROCEDURE IF EXISTS dense_1;
 delimiter //
-CREATE PROCEDURE relu(IN channels INT)
+CREATE PROCEDURE dense_1(IN channels INT)
 BEGIN
 	INSERT INTO dense_1_output
 	SELECT
@@ -260,25 +221,24 @@ BEGIN
 END //
 delimiter ;
 
-DROP PROCEDURE IF EXISTS relu_process;
+DROP PROCEDURE IF EXISTS dense_1_process;
 delimiter //
-CREATE PROCEDURE relu_process()
+CREATE PROCEDURE dense_1_process()
 BEGIN
     DECLARE i INT DEFAULT 0; 
     TRUNCATE TABLE dense_1_output;
     WHILE i<16 DO
-		CALL relu(i);
+		CALL dense(i);
         SET i = i + 1;
 	END WHILE;
-    UPDATE dense_1_output SET value = 0 WHERE value < 0;
+    # activation function: ReLU
+    DELETE FROM dense_1_output WHERE value <= 0;
 END //
 delimiter ;
--- CALL relu_process(1);
 
-#dense softmax
-DROP PROCEDURE IF EXISTS softmax;
+DROP PROCEDURE IF EXISTS dense_2;
 delimiter //
-CREATE PROCEDURE softmax(IN channels INT)
+CREATE PROCEDURE dense_2(IN channels INT)
 BEGIN
 	INSERT INTO dense_2_output
 	SELECT
@@ -290,49 +250,46 @@ BEGIN
         dense_2_weights AS W,
         dense_2_biases AS B
     WHERE
-		I.dim1=W.dim        
+		I.dim1=W.dim1        
         AND W.filter_index = B.filter_index
         AND channels = W.filter_index
     GROUP BY I.image_index, W.filter_index;
 END //
 delimiter ;
-SELECT COUNT(value)  FROM dense_2_output;
 
-DROP PROCEDURE IF EXISTS predict;
+#dense softmax
+DROP PROCEDURE IF EXISTS softmax;
 delimiter //
-CREATE PROCEDURE predict()
+CREATE PROCEDURE softmax()
 BEGIN
-	DECLARE value_count FLOAT;
-    DECLARE image_idx INT DEFAULT 0;
-    WHILE image_idx < 750 DO
-		SELECT SUM(value) INTO value_count FROM dense_2_output WHERE dense_2_output.image_index = image_idx;
-		IF value_count > 0 THEN
-			UPDATE dense_2_output SET value = (value / value_count) WHERE dense_2_output.image_index = image_idx;
-		END IF;
-    END WHILE;
+	UPDATE dense_2_output SET value = EXP(value);
+
+	TRUNCATE TABLE denominators;
+	INSERT INTO denominators
+    SELECT image_index, SUM(value)
+	FROM dense_2_output
+	GROUP BY image_index;
+    
+    UPDATE dense_2_output SET value = value / 
+    (
+		SELECT value FROM denominators WHERE dense_2_output.image_index = denominators.image_index
+    );
     
 END //
 delimiter ;
 
-DROP PROCEDURE IF EXISTS softmax_process;
+DROP PROCEDURE IF EXISTS dense_2_process;
 
 delimiter //
-CREATE PROCEDURE softmax_process()
+CREATE PROCEDURE dense_2_process()
 BEGIN
     DECLARE i INT DEFAULT 0; 
     TRUNCATE TABLE dense_2_output;
-    TRUNCATE TABLE predictions;
     WHILE i<10 DO
-		CALL softmax(i);
+		CALL dense_2(i);
         SET i = i + 1;
 	END WHILE;
-    UPDATE dense_2_output SET value = 0 WHERE value < 0;
-    CALL predict();
+    CALL softmax();
 END //
 delimiter ;
--- CALL softmax_process(1);
-
-# delete all
-DELETE FROM conv2d_1_output;
-DELETE FROM conv2d_2_output;
 
