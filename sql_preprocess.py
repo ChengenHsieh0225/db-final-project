@@ -51,3 +51,13 @@ for train_index, r0 in enumerate(train_images):
                              [train_index, x, y, float(r2[0])])
             
 mydb.commit()
+
+# insert train_labels
+for image_index, r0 in enumerate(train_labels):
+    for index, value in enumerate(r0):
+        if (value == 0):
+            continue
+        else:
+            mycursor.execute(f"INSERT INTO image_labels (image_index, label) VALUES (%s, %s);", 
+                              [image_index, index])
+mydb.commit()

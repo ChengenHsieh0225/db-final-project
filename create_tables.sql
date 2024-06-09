@@ -14,6 +14,11 @@ CREATE TABLE IF NOT EXISTS input_image (
     CHECK (value >= 0 AND value <= 1)
 );
 
+# image labels
+CREATE TABLE IF NOT EXISTS image_label (
+	image_index INT PRIMARY KEY,
+    label INT
+);
 
 # store the output of each layer
 CREATE TABLE IF NOT EXISTS conv2d_1_output (
