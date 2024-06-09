@@ -13,6 +13,26 @@ CREATE TABLE IF NOT EXISTS input_image (
     value FLOAT,
     CHECK (value >= 0 AND value <= 1)
 );
+-- CREATE TABLE IF NOT EXISTS input_image_transpos (
+--     image_index INT,
+--     dim1 INT,
+--     dim2 INT,
+--     channel INT,
+--     value FLOAT,
+--     CHECK (value >= 0 AND value <= 1)
+-- );
+-- INSERT INTO input_image_transpos (image_index, dim1, dim2, channel, value)
+-- SELECT img.image_index, img.dim2, img.dim1, img.channel, img.value
+-- FROM input_image AS img;
+
+-- CREATE TABLE IF NOT EXISTS input_image_test (
+--     image_index INT,
+--     dim1 INT,
+--     dim2 INT,
+--     channel INT,
+--     value FLOAT,
+--     CHECK (value >= 0 AND value <= 1)
+-- );
 
 # image labels
 CREATE TABLE IF NOT EXISTS image_label (

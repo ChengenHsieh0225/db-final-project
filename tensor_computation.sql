@@ -1,52 +1,61 @@
 DROP VIEW IF EXISTS input_image_batch; 
 CREATE VIEW input_image_batch AS
 	SELECT *
-	FROM input_image
-	WHERE image_index >= 0 AND image_index <= 0+750;
+	FROM input_image_transpos
+	WHERE image_index >= 0 AND image_index <= 0+100;
 
 # conv2d_1
 DROP PROCEDURE IF EXISTS conv2d_part_1;
 DELIMITER //
-CREATE PROCEDURE conv2d_part_1 (IN dim1_shift INT, dim2_shift INT)
-BEGIN
-	INSERT INTO conv2d_1_output
-	SELECT
-        I.image_index,
-		3*FLOOR((I.dim1-dim1_shift)/3)+dim1_shift AS dim1,
-		3*FLOOR((I.dim2-dim2_shift)/3)+dim2_shift AS dim2,
-		W.filter_index AS channel,
-		SUM(I.value * W.weight) + B.weight
-	FROM
-		input_image_batch AS I,
-        conv2d_1_weights AS W,
-        conv2d_1_biases AS B
-    WHERE
-		(I.dim1-dim1_shift)%3=W.dim1
-        AND (I.dim2-dim2_shift)%3=W.dim2
-        AND W.filter_index = B.filter_index
-        AND I.channel = W.channel
-    GROUP BY 1, 2, 3, 4;
+CREATE PROCEDURE conv2d_part_1 (IN input_image VARCHAR(40), IN dim1_shift INT, IN dim2_shift INT)
+BEGIN    
+    SET @test2 = CONCAT(
+        'INSERT INTO conv2d_1_output (image_index, dim1, dim2, channel, value) ', 
+        'SELECT ',
+            'I.image_index, ',
+            '3*FLOOR((I.dim1 - ', dim1_shift, ') / 3) + ', dim1_shift, ' AS dim1, ',
+            '3*FLOOR((I.dim2 - ', dim2_shift, ') / 3) + ', dim2_shift, ' AS dim2, ',
+            'W.filter_index AS channel, ',
+            'SUM(I.value * W.weight) + B.weight ',
+        'FROM ', input_image, ' AS I, ',
+            'conv2d_1_weights AS W, ',
+            'conv2d_1_biases AS B ',
+        'WHERE ',
+            '(I.dim1 - ', dim1_shift, ') % 3 = W.dim1 ',
+            'AND (I.dim2 - ', dim2_shift, ') % 3 = W.dim2 ',
+            'AND W.filter_index = B.filter_index ',
+            'AND I.channel = W.channel ',
+        'GROUP BY I.image_index, dim1, dim2, channel'
+    );
+
+    PREPARE stmtconv FROM @test2;
+    EXECUTE stmtconv;
+    DEALLOCATE PREPARE stmtconv;
 END //
 DELIMITER ;
-
+SELECT * FROM flatten_output;
 -- CALL conv2d_part_1(2, 1);
 
 DROP PROCEDURE IF EXISTS conv2d_1;
 DELIMITER //
-CREATE PROCEDURE conv2d_1()
+CREATE PROCEDURE conv2d_1(IN input_image VARCHAR(40))
 BEGIN
-	DECLARE i int default 0;
-    DECLARE j int default 0;
-	WHILE i<3 DO
-		SET j = 0;
-		WHILE j<3 DO
-			CALL conv2d_part_1(i, j);
-            SET j = j+1;
-		END WHILE;
-		SET i = i+1;
-	END WHILE;
-    DELETE FROM conv2d_1_output WHERE (dim1<0 or dim1>=26) or (dim2<0 or dim2>=26);
-    -- relu
+    DECLARE i INT DEFAULT 0;
+    DECLARE j INT DEFAULT 0;
+    DECLARE stmt VARCHAR(500);
+    TRUNCATE table conv2d_1_output;
+    WHILE i < 3 DO
+        SET j = 0;
+        WHILE j < 3 DO
+            SET @conv2d = CONCAT('CALL conv2d_part_1(\'', input_image, '\', ', i, ', ', j, ')');
+            PREPARE stmt FROM @conv2d;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+            SET j = j + 1;
+        END WHILE;
+        SET i = i + 1;
+    END WHILE;
+    DELETE FROM conv2d_1_output WHERE (dim1 < 0 OR dim1 >= 26) OR (dim2 < 0 OR dim2 >= 26);
     DELETE FROM conv2d_1_output WHERE value <= 0;
 END //
 DELIMITER ;
@@ -160,7 +169,7 @@ DELIMITER //
 CREATE PROCEDURE maxpooling2d_2_process()
 BEGIN
 	DECLARE i int default 0;   
-    # CALL init_maxpooling2d_2();
+    TRUNCATE table max_pooling_2_output;
 	WHILE i<13 DO
 		CALL maxpooling2d_2(i);
 		SET i = i+1;
