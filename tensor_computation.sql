@@ -1,7 +1,7 @@
 DROP VIEW IF EXISTS input_image_batch; 
 CREATE VIEW input_image_batch AS
 	SELECT *
-	FROM input_image_transpos
+	FROM input_image
 	WHERE image_index >= 0 AND image_index <= 0+100;
 
 # conv2d_1
@@ -185,7 +185,7 @@ CREATE PROCEDURE flatten()
 BEGIN
     TRUNCATE TABLE flatten_output;  
     INSERT INTO flatten_output (image_index, dim1, value)
-    SELECT image_index, (dim1 + dim2*5 + channel*25), value
+    SELECT image_index, (dim1*20 + dim2*4 + channel*1), value
     FROM max_pooling_2_output;
 END //
 DELIMITER ;
@@ -216,7 +216,7 @@ BEGIN
 	INSERT INTO dense_1_output
 	SELECT
         I.image_index,
-		W.filter_index AS dim1,		
+		W.filter_index AS dim1,
 		SUM(I.value * W.weight) + B.weight AS value
 	FROM
 		flatten_output AS I,

@@ -86,7 +86,7 @@ def update_dense_weight_2(shape, arr):
     if len(shape) == 2:
         for dim1 in range(shape[0]):
             for idx in range(shape[1]):
-                mycursor.execute(f"INSERT INTO  dense_2_weights   (filter_index, dim, weight ) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE weight = VALUES(weight);", [idx, dim1, float(arr[dim1][idx])])
+                mycursor.execute(f"INSERT INTO  dense_2_weights   (filter_index, dim1, weight ) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE weight = VALUES(weight);", [idx, dim1, float(arr[dim1][idx])])
                 mydb.commit()
 
     else:
@@ -109,7 +109,7 @@ test_images = test_images.astype('float32') / 255
 
 train_labels = tf.keras.utils.to_categorical(train_labels)
 test_labels = tf.keras.utils.to_categorical(test_labels)
-
+print(train_labels)
 # 創建模型
 model = create_cnn_model_2()
 """loss_fn = tf.keras.losses.CategoricalCrossentropy()
@@ -231,7 +231,7 @@ class LayerTimeCallback(tf.keras.callbacks.Callback):
                 update_dense_weight_2(weight.shape, weight)
                 update_dense_weight_2(bias.shape, bias)
                 
-                print (bias)
+                # print (bias)
             # print(layer.name)
 
 model.compile(optimizer='adam',
