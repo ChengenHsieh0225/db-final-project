@@ -95,6 +95,15 @@ CREATE TABLE IF NOT EXISTS dense_2_output_1 (
     PRIMARY KEY (image_index, dim1)
 );
 
+DROP VIEW IF EXISTS result;
+CREATE VIEW result AS
+SELECT  image_index, dim1 FROM dense_2_output AS t1 
+WHERE value =(
+	SELECT MAX(value)
+    FROM dense_2_output AS t2
+    WHERE t2.image_index = t1.image_index
+);
+
 CREATE VIEW result_1 AS
 SELECT  image_index, dim1 FROM dense_2_output_1 AS t1 
 WHERE value =(
@@ -102,7 +111,6 @@ WHERE value =(
     FROM dense_2_output_1 AS t2
     WHERE t2.image_index = t1.image_index
 );
-
 
 CALL conv2d_1('input_image_batch');
 CALL maxpooling2d_1_process();
