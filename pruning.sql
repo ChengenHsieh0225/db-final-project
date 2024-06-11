@@ -103,6 +103,15 @@ WHERE value =(
     WHERE t2.image_index = t1.image_index
 );
 
+
+CALL conv2d_1('input_image_batch');
+CALL maxpooling2d_1_process();
+CALL conv2d_2();
+CALL maxpooling2d_2_process();
+CALL flatten();
+CALL dense_1_process();
+CALL dense_2_process();
+
 SELECT
 	l.image_index,
     r0.dim1 AS output_0,
