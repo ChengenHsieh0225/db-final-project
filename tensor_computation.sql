@@ -78,9 +78,9 @@ BEGIN
 	GROUP BY 
         image_index, FLOOR(output.dim1 / 2), FLOOR(output.dim2 / 2);
 END //
-
+DELIMITER ;
 DROP PROCEDURE IF EXISTS maxpooling2d_1_process;
-
+DELIMITER //
 CREATE PROCEDURE maxpooling2d_1_process()
 BEGIN
 	DECLARE i int default 0;   
