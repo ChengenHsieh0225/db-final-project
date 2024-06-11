@@ -3,7 +3,7 @@
 **sql_preprocess.py**
 * store the images into the database.
 
-**handwritten_digit_update weight.py
+**handwritten_digit_update weight.py**
 * store the weights of the trained model into the database.
 
 **create_tables.sql**
