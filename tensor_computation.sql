@@ -2,7 +2,7 @@ DROP VIEW IF EXISTS input_image_batch;
 CREATE VIEW input_image_batch AS
 	SELECT *
 	FROM input_image
-	WHERE image_index >= 0 AND image_index <= 0+100;
+	WHERE image_index >= 0 AND image_index <= 0+750;
 
 # conv2d_1
 DROP PROCEDURE IF EXISTS conv2d_part_1;
@@ -33,7 +33,7 @@ BEGIN
     DEALLOCATE PREPARE stmtconv;
 END //
 DELIMITER ;
-SELECT * FROM flatten_output;
+-- SELECT * FROM flatten_output;
 -- CALL conv2d_part_1(2, 1);
 
 DROP PROCEDURE IF EXISTS conv2d_1;

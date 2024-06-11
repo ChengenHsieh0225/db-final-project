@@ -1,3 +1,20 @@
+CALL conv2d_1('input_image_batch');
+CALL maxpooling2d_1_process();
+CALL conv2d_2();
+CALL maxpooling2d_2_process();
+CALL flatten();
+CALL dense_1_process();
+CALL dense_2_process();
+DROP VIEW IF EXISTS result;
+CREATE VIEW result AS
+SELECT  image_index, dim1 FROM dense_2_output AS t1 
+WHERE value =(
+	SELECT MAX(value)
+    FROM dense_2_output AS t2
+    WHERE t2.image_index = t1.image_index
+);
+
+DROP VIEW IF EXISTS conv2d_1_weights_pruned;
 CREATE VIEW conv2d_1_weights_pruned AS
 	SELECT * FROM conv2d_1_weights
     WHERE filter_index NOT IN (1, 2);
@@ -95,15 +112,8 @@ CREATE TABLE IF NOT EXISTS dense_2_output_1 (
     PRIMARY KEY (image_index, dim1)
 );
 
-DROP VIEW IF EXISTS result;
-CREATE VIEW result AS
-SELECT  image_index, dim1 FROM dense_2_output AS t1 
-WHERE value =(
-	SELECT MAX(value)
-    FROM dense_2_output AS t2
-    WHERE t2.image_index = t1.image_index
-);
 
+DROP VIEW IF EXISTS result_1;
 CREATE VIEW result_1 AS
 SELECT  image_index, dim1 FROM dense_2_output_1 AS t1 
 WHERE value =(
